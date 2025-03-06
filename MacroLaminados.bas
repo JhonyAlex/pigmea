@@ -89,7 +89,7 @@ Private Sub CommandButton1_Click()
             ' Verificar si existe pedido
             filaExistente = ExisteNoPedido(wsBaseDatos, noPedido)
             
-            If filaExistente > 0 Then
+                       If filaExistente > 0 Then
                 ' Mostrar opciones para pedido duplicado
                 respuesta = MsgBox("El número de pedido " & noPedido & " ya existe. ¿Qué deseas hacer?" & vbCrLf & _
                                  "- Sí: Editar el registro existente" & vbCrLf & _
@@ -109,15 +109,12 @@ Private Sub CommandButton1_Click()
                         ultimaFilaBD = ultimaFilaBD + 1
                         
                     Case vbCancel
-                        ' Cancelar
+                        ' Cancelar y mantener los datos en el formulario
                         DeshacerCambios wsBaseDatos, filasModificadas
                         Application.ScreenUpdating = True
-                        MsgBox "Proceso cancelado por el usuario. Los cambios han sido revertidos.", vbInformation
+                        MsgBox "Proceso cancelado por el usuario. Los datos se mantienen en el formulario.", vbInformation
                         Exit Sub
                 End Select
-            Else
-                ' Nuevo registro
-                ultimaFilaBD = ultimaFilaBD + 1
             End If
             
             ' Calcular Fecha según el día
@@ -173,12 +170,15 @@ Private Sub CommandButton1_Click()
 SiguienteRegistro:
     Next i
     
-    Application.ScreenUpdating = True
-    
-    ' Mensaje con formato específico
-    MsgBox "Datos guardados correctamente." & vbCrLf & _
-           "Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): " & Format(Now, "yyyy-MM-dd HH:mm:ss") & vbCrLf & _
-           "Current User's Login: JhonyAlex", vbInformation, "Éxito"
+    Application.ScreenUpdating = True    
+    If registrosProcesados > 0 Then
+        MsgBox "Datos guardados correctamente." & vbCrLf & _
+               "Fecha actual: " & Format(Now, "yyyy-MM-dd HH:mm:ss") & vbCrLf & _
+               "Current User's Login: JhonyAlvarez", vbInformation, "Éxito"
+        
+        ' Llamar a la función de limpieza
+        LimpiarDespuesDeEnvio
+    End If
     Exit Sub
     
 ManejadorErrores:
@@ -308,4 +308,14 @@ Private Sub CommandButton3_Click()
     
     ' Mensaje opcional
     ' MsgBox "El contenido de las celdas ha sido borrado.", vbInformation, "Borrado Exitoso"
+End Sub
+
+' Nueva función para limpiar después del envío
+Private Sub LimpiarDespuesDeEnvio()
+    With ThisWorkbook.Sheets("Registro")
+        ' Limpiar todo: datos de la tabla, turno, operario y fecha
+        .Range("C9:I48").ClearContents  ' Datos de la tabla
+        .Range("C4:C5").ClearContents   ' Turno y Operario
+        .Range("H4").ClearContents      ' Fecha
+    End With
 End Sub
